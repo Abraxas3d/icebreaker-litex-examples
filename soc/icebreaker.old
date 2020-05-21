@@ -30,16 +30,10 @@ from litex.build.lattice.programmer import IceStormProgrammer
 from litex.soc.integration.soc_core import soc_core_argdict, soc_core_args
 from litex.soc.integration.doc import AutoDoc
 
-from litex_boards.platforms.icebreaker import Platform, break_off_pmod, seven_segment_PMOD1A
+from litex_boards.platforms.icebreaker import Platform, break_off_pmod
 
 from litex.soc.cores.uart import UARTWishboneBridge
 from rtl.leds import Leds
-
-#MDT added a file for buttons
-from rtl.btns import Btns
-
-#MDT added a file for seven segment display
-from rtl.segments import Segments
 
 import litex.soc.doc as lxsocdoc
 
@@ -154,8 +148,6 @@ class BaseSoC(SoCCore):
             if hasattr(self, "cpu") and self.cpu.name == "vexriscv":
                 self.register_mem("vexriscv_debug", 0xf00f0000, self.cpu.debug_bus, 0x100)
 
-
-        # add the break_off_pmod extension and request the pins
         platform.add_extension(break_off_pmod)
 
         self.submodules.leds = Leds(Cat(
@@ -177,46 +169,6 @@ class BaseSoC(SoCCore):
                 ["hledg5", "Green LED #5 on the iCEBreaker head."]])
 
         self.add_csr("leds")
-
-        # The buttons already existed in the platform add_extension 
-        # from the icebreaker.py file that was used to add and request
-        # the pins for the LEDs.
-        # But, I had to write an rtl file for buttons and request the 
-        # pins connected to the buttons.
-        self.submodules.btns = Btns(Cat(
-            platform.request("user_btn", 0),
-            platform.request("user_btn", 1),
-            platform.request("user_btn", 2)))
-
-        self.add_csr("btns")
-
-        # add the seven_segment_PMOD1A extension and request the pins
-        platform.add_extension(seven_segment_PMOD1A)
-
-        self.submodules.segments = Segments(Cat(
-            platform.request("segment_pin", 0),
-            platform.request("segment_pin", 1),
-            platform.request("segment_pin", 2),
-            platform.request("segment_pin", 3),
-            platform.request("segment_pin", 4),
-            platform.request("segment_pin", 5),
-            platform.request("segment_pin", 6),
-            platform.request("segment_pin", 7)),
-            segment_name = [
-                 ["AA", "Segment A"],
-                 ["AB", "Segment B"],
-                 ["AC", "Segment C"],
-                 ["AD", "Segment D"],
-                 ["AE", "Segment E"],
-                 ["AF", "Segment F"],
-                 ["AG", "Segment G"],
-                 ["CA", "The shared cathod"]])
-
-        self.add_csr("segments")
-
-
-
-
 
     def set_yosys_nextpnr_settings(self, nextpnr_seed=0, nextpnr_placer="heap"):
         """Set Yosys/Nextpnr settings by overriding default LiteX's settings.
